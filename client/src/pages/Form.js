@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
+import validator from "validator"
 
 const Form = (props) => {
   const [formValues, setFormValues] = useState([
@@ -10,6 +11,8 @@ const Form = (props) => {
   ]);
   const [showModal, setShowModal] = useState(true);
   const [loader, setLoader] = useState(false);
+  const [emailInvalid, setEmailInvalid] = useState([]);
+  const [nameInvalid, setNameInvalid] = useState([]);
   const notify = (status, message) =>
     toast(message, {
       position: "top-right",
@@ -39,25 +42,37 @@ const Form = (props) => {
   };
 
   let handleSubmit = async (event) => {
-    setLoader(true);
-    await axios
-      .post("/addUser", formValues)
-      .then((res) => {
-        if (res?.status === 200) {
-          setLoader(false);
-          notify(1, "Date submitted successfully");
-          props?.setShow(true);
-          setShowModal(false);
-        } else {
-          setLoader(false);
-          notify(0, "Something went wrong!");
-        }
-      });
+    event?.preventDefault();
+    let emailArr = [];
+    let nameArr = [];
+    formValues.filter((ele, index) => {
+      if (!validator.isEmail(ele.email)) {
+        emailArr.push(index);
+        setEmailInvalid(emailArr);
 
-    event.preventDefault();
-    alert(JSON.stringify(formValues));
+      }
+      if (ele.username.length < 4) {
+        nameArr.push(index);
+        setNameInvalid(nameArr);
+      }
+    })
+    if (!emailArr.length && !nameArr.length) {
+      setLoader(true);
+      await axios
+        .post("/addUser", formValues)
+        .then((res) => {
+          if (res?.status === 200) {
+            setLoader(false);
+            notify(1, "Date submitted successfully");
+            props?.setShow(true);
+            setShowModal(false);
+          } else {
+            setLoader(false);
+            notify(0, "Something went wrong!");
+          }
+        });
+    }
   };
-
   return (
     <>
       <ToastContainer />
@@ -107,6 +122,7 @@ const Form = (props) => {
                             value={element.email || ""}
                             onChange={(e) => handleChange(index, e)}
                           />
+                          {emailInvalid.includes(index) && <p className="text-danger">Inavlid email!</p>}
                         </div>{" "}
                         <div class="form-group mx-sm-3">
                           <label for="inputPassword2" class="sr-only">
@@ -120,6 +136,7 @@ const Form = (props) => {
                             value={element.username || ""}
                             onChange={(e) => handleChange(index, e)}
                           />
+                          {nameInvalid.includes(index) && <p className="text-danger">Minimun 4 characters!</p>}
                         </div>{" "}
                       </div>
                       {index ? (
