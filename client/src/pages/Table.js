@@ -6,7 +6,7 @@ const Table = () => {
   const [loader, setLoader] = useState(false);
   useEffect(() => {
     setLoader(true);
-    axios.get("http://localhost:3001/getUser").then((res) => {
+    axios.get("/getUser").then((res) => {
       setUsers(res?.data?.data);
       setLoader(false);
     });

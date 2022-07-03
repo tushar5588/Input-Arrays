@@ -41,7 +41,7 @@ const Form = (props) => {
   let handleSubmit = async (event) => {
     setLoader(true);
     await axios
-      .post("http://localhost:3001/addUser", formValues)
+      .post("/addUser", formValues)
       .then((res) => {
         if (res?.status === 200) {
           setLoader(false);
